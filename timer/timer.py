@@ -20,8 +20,11 @@ def send_notification(actual_phase):
 def load_status():
     if not os.path.exists(status_file):
         return {"phase_idx": 0, "remaining": sequence[0] * 60, "active": False, "target": None}
-    with open(status_file, "r") as f:
-        return json.load(f)
+    try:
+        with open(status_file, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return {"phase_idx": 0, "remaining": sequence[0] * 60, "active": False, "target": None}
 
 status = load_status()
 now = time.time()
@@ -66,7 +69,7 @@ if not status["active"]: icon = "󱫞"
 output = {
     "text": f"{icon} {time_text}",
     "class": "break" if is_break else "work",
-    "tooltip": f"Phase: {sequence[status["phase_idx"]]} minutes {phase} \nClick to start/pause | Right-click to reset"
+    "tooltip": f"Phase: {sequence[status['phase_idx']]} minutes {phase} \nClick to start/pause | Right-click to reset"
 }
 
 print(json.dumps(output))
